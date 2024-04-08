@@ -19,11 +19,11 @@
             if (!("Notification" in window)) {
                 alert("This browser does not support desktop notification");
             } else if (Notification.permission === "granted") {
-                setTimeout(await notify(event), 5000);
+                setTimeout(function() {await notify(event)}, 5000);
             } else if (Notification.permission !== "denied") {
                 await Notification.requestPermission().then(async (permission) => {
                     if (permission === "granted") {
-                        setTimeout(await notify(event), 5000);
+                        setTimeout(function() {await notify(event)}, 5000);
                     }
                 });
             }
