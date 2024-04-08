@@ -6,34 +6,48 @@
 <button>Icon,Image</button>
 <button>Body,Icon,Image</button>
 <script type="text/javascript">
-Notification.requestPermission().then(function (permission) {
+  Notification.requestPermission().then(function (permission) {
     console.log(permission);
-});
-    
-console.log("script work");
-const buttons = document.querySelectorAll('button');
+  });
 
-for (var i = 0; i < buttons.length; ++i) {
-var button = buttons[i];
+  console.log("script work");
+  const buttons = document.querySelectorAll('button');
+
+  for (var i = 0; i < buttons.length; ++i) {
+    var button = buttons[i];
     button.addEventListener('click', async (e) => {
-      var el = event.target || event.srcElement;
-      var txt = el.innerText;
-
-      console.log('requesting');
-      const notificationPermission = await Notification.requestPermission();
-      console.log('requested', notificationPermission, Notification.permission);
-      const notification = new Notification("My Title", {
-        icon: txt.indexOf("Icon") > -1 ? "https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/1024px/1f436.png" : undefined,
-        body: txt.indexOf("Body") > -1 ? "My Body" : undefined,
-        image: txt.indexOf("Image") > -1 ? "https://liberty.albany.k12.or.us/media/sites/18/2020/11/Sora-App-820x480.png" : undefined,
-      });
-      notification.onshow = () => {
-        document.body.classList.toggle('shown', true);
-        console.log('shown');
+      if (!("Notification" in window)) {
+        alert("This browser does not support desktop notification");
+      } else if (Notification.permission === "granted") {
+        await notify(el);
+      } else if (Notification.permission !== "denied") {
+        await Notification.requestPermission().then(async (permission) => {
+          if (permission === "granted") {
+            await notify(el);
+          }
+        });
       }
-
-      console.log('notification', notification);
     });
-}
+  }
+
+  var notify = async function (el) {
+    var el = event.target || event.srcElement;
+    var txt = el.innerText;
+
+    console.log('requesting');
+    const notificationPermission = await Notification.requestPermission();
+    console.log('requested', notificationPermission, Notification.permission);
+    const notification = new Notification("My Title", {
+      icon: txt.indexOf("Icon") > -1 ? "https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/1024px/1f436.png" : undefined,
+      body: txt.indexOf("Body") > -1 ? "My Body" : undefined,
+      image: txt.indexOf("Image") > -1 ? "https://liberty.albany.k12.or.us/media/sites/18/2020/11/Sora-App-820x480.png" : undefined,
+    });
+    notification.onshow = () => {
+      document.body.classList.toggle('shown', true);
+      console.log('shown');
+    }
+
+    console.log('notification', notification);
+  }
 
 </script>
