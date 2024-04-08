@@ -6,6 +6,10 @@
 <button>Icon,Image</button>
 <button>Body,Icon,Image</button>
 <script type="text/javascript">
+Notification.requestPermission().then(function (permission) {
+    console.log(permission);
+});
+    
 console.log("script work");
 const buttons = document.querySelectorAll('button');
 
