@@ -6,7 +6,7 @@
 <button>Icon,Image</button>
 <button>Body,Icon,Image</button>
 <script type="text/javascript">
-    navigator.serviceWorker.register('sw.js');
+    navigator.serviceWorker.register('content/sw.js');
     Notification.requestPermission().then(function (permission) {
         console.log(permission);
     });
