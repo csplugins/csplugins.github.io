@@ -1,0 +1,90 @@
+<button>Body</button>
+<button>Icon</button>
+<button>Image</button>
+<button>Body,Icon</button>
+<button>Body,Image</button>
+<button>Icon,Image</button>
+<button>Body,Icon,Image</button>
+<br>
+<button>Old,Body</button>
+<button>Old,Icon</button>
+<button>Old,Image</button>
+<button>Old,Body,Icon</button>
+<button>Old,Body,Image</button>
+<button>Old,Icon,Image</button>
+<button>Old,Body,Icon,Image</button>
+<script type="text/javascript">
+    navigator.serviceWorker.register('content/sw.js');
+    Notification.requestPermission().then(function (permission) {
+        console.log(permission);
+    });
+
+    const buttons = document.querySelectorAll('button');
+    for (var i = 0; i < buttons.length; ++i) {
+        var button = buttons[i];
+        button.addEventListener('click', async () => {
+            await notify(event);
+        });
+    }
+
+    var notify = async function (event) {
+        var el = event.target || event.srcElement;
+        var txt = el.innerText;
+
+        if (txt.indexOf("Old") > -1) {
+            await specialNotification();
+            return;
+        }
+
+        Notification.requestPermission(async function (result) {
+            if (result === 'granted') {
+                console.log("result granted");
+                await navigator.serviceWorker.getRegistrations().then(async function(registrations) {
+                    console.log("sw ready");
+                    await registrations[0].showNotification("My Title", {
+                        icon: txt.indexOf("Icon") > -1 ? "https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/1024px/1f436.png" : undefined,
+                        body: txt.indexOf("Body") > -1 ? "My Body" : undefined,
+                        image: txt.indexOf("Image") > -1 ? "https://liberty.albany.k12.or.us/media/sites/18/2020/11/Sora-App-820x480.png" : undefined,
+                    });
+                });
+            }
+        });
+
+        console.log("end requestPermission");
+    }
+
+    var specialNotification = async function() {
+        if (!("Notification" in window)) {
+            alert("This browser does not support desktop notification");
+        } else if (Notification.permission === "granted") {
+            await notify2(event);
+        } else if (Notification.permission !== "denied") {
+            await Notification.requestPermission().then(async (permission) => {
+                if (permission === "granted") {
+                    await notify2(event);
+                }
+            });
+        }
+    }
+
+    var notify2 = async function (event) {
+        var el = event.target || event.srcElement;
+        var txt = el.innerText;
+
+        console.log('requesting');
+        const notificationPermission = await Notification.requestPermission();
+        console.log('requested', notificationPermission, Notification.permission);
+        const notification = new Notification("My Title", {
+            icon: txt.indexOf("Icon") > -1 ? "https://images.emojiterra.com/google/noto-emoji/unicode-15.1/color/1024px/1f436.png" : undefined,
+            body: txt.indexOf("Body") > -1 ? "My Body" : undefined,
+            image: txt.indexOf("Image") > -1 ? "https://liberty.albany.k12.or.us/media/sites/18/2020/11/Sora-App-820x480.png" : undefined,
+        });
+        notification.onshow = () => {
+            document.body.classList.toggle('shown', true);
+            console.log('shown');
+        }
+
+        console.log('notification', notification);
+    }
+
+</script>
