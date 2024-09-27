@@ -12,3 +12,6 @@ jobs:
       - name: Try pulling private repository
         run: git clone https://oauth:${{ secrets.PAT }}@github.com/OverDriveInc/AppScorecard.git
         continue-on-error: true
+      - name: Running `ls` command to verify cloning
+        run: ls -a
+        continue-on-error: true
