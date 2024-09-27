@@ -32,15 +32,15 @@ jobs:
       - name: Clone each repository, create .gitattributes file, and run git add --renormalize
         run: |
           while IFS= read -r repo; do
-            git clone https://oauth2:${{ secrets.PAT }}@github.com/OverDriveIne/$repo
+            git clone https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo
             cd $repo
             echo "* text=auto" > .gitattributes
             git add --renormalize .
             if [ -n "$(git status --porcelain)" ]; then
               git checkout -b add-gitattributes
               git commit -m "Add .gitattributes file and renormalize"
-              git push https://oauth2:${{ secrets.PAT }}@github.com/OverDriveIne/$repo add-gitattributes
-              gh pr create --title "Add .gitattributes file and renormalize" --body "This PR adds a .gitattributes file and renormalizes the repository." --head add-gitattributes --repo OverDriveIne/$repo
+              git push https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo add-gitattributes
+              gh pr create --title "Add .gitattributes file and renormalize" --body "This PR adds a .gitattributes file and renormalizes the repository." --head add-gitattributes --repo OverDriveInc/$repo
             fi
             cd ..
           done < repo_names.txt
