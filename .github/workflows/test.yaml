@@ -33,7 +33,7 @@ jobs:
                 "org": "OverDriveInc",
                 "teamSlug": "tools-qa"
               }
-            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' | grep -ie AppScorecard > repo_names.txt
+            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' | grep -ie QAPortal > repo_names.txt
       - name: Clone each repository, create .gitattributes file, and run git add --renormalize
         run: |
           while IFS= read -r repo; do
