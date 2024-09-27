@@ -53,4 +53,4 @@ jobs:
             cd ..
           done < repo_names.txt
       - name: See result of gh pr list
-        run: gh pr list --repo OverDriveInc/$repo --head add-gitattributes --state open --json number --jq '.[0]'
+        run: gh pr list --repo OverDriveInc/AppScorecard --head add-gitattributes --state open --json number --jq '.[0]'
