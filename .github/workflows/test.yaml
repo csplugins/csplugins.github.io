@@ -12,9 +12,12 @@ jobs:
       # - name: Try pulling private repository
       #   run: git clone https://oauth:${{ secrets.PAT }}@github.com/OverDriveInc/AppScorecard.git
       #   continue-on-error: true
+      - name: Setup Git email
+        run: git config --global user.email ""
+      - name: Setup Git username
+        run: git config --global user.name "GitHub Actions"
       - name: Running `ls` command to verify cloning
         run: ls -a
-        continue-on-error: true
       - name: See if jq is installed
         run: jq
       - name: Use jq to echo the repo names
@@ -44,4 +47,3 @@ jobs:
             fi
             cd ..
           done < repo_names.txt
-        continue-on-error: true
