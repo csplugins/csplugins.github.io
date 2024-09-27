@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   pull_request:
 env:
-  GH_TOKEN: ${{ github.token }}
+  GH_TOKEN: ${{ secrets.PAT }}
 jobs:
   job1:
     runs-on: ubuntu-latest
