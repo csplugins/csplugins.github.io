@@ -46,7 +46,7 @@ jobs:
               git add -A
               git commit -m "Add .gitattributes file and renormalize"
               git push https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo add-gitattributes -f
-              if [[ -n "${gh pr list --repo OverDriveInc/$repo --head add-gitattributes --state open --json number --jq '.[0]'}" ]]; then
+              if [[ -n gh pr list --repo OverDriveInc/$repo --head add-gitattributes --state open --json number --jq '.[0]' ]]; then
                 gh pr create --title "Add .gitattributes file and renormalize" --body "This PR adds a .gitattributes file and renormalizes the repository." --head add-gitattributes --repo OverDriveInc/$repo
               else
                 echo "PR already exists"
