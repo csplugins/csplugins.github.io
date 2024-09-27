@@ -20,10 +20,12 @@ jobs:
         continue-on-error: true
       - name: Use jq to echo the repo names
         run: |
-            curl -X POST https://api.github.com/graphql -H "Content-Type: application/json" -H "Authorization: Bearer ${{ secrets.PAT }}" -d '\
-            {
+          curl -X POST https://api.github.com/graphql \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.PAT }}" \
+            -d '{
               "query": "query($org: String!, $teamSlug: String!) { organization(login: $org) { team(slug: $teamSlug) { repositories(first: 100) { totalCount nodes { name url } } } } }",
-              "variables":
+              "variables": {
                 "org": "OverDriveInc",
                 "teamSlug": "tools-qa"
               }
