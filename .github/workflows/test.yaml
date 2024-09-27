@@ -3,7 +3,7 @@ on:
   workflow_dispatch:
   pull_request:
 env:
-  GH_TOKEN: ${{ secrets.PAT }}
+  GH_TOKEN: ${{ github.token }}
 jobs:
   job1:
     runs-on: ubuntu-latest
@@ -46,7 +46,9 @@ jobs:
               git add -A
               git commit -m "Add .gitattributes file and renormalize"
               git push https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo add-gitattributes -f
-              gh pr create --title "Add .gitattributes file and renormalize" --body "This PR adds a .gitattributes file and renormalizes the repository." --head add-gitattributes --repo OverDriveInc/$repo
+              if ! gh pr list --repo OverDriveInc/$repo --head add-gitattributes --json number --jq '.[0]'; then
+                gh pr create --title "Add .gitattributes file and renormalize" --body "This PR adds a .gitattributes file and renormalizes the repository." --head add-gitattributes --repo OverDriveInc/$repo
+              fi
             fi
             cd ..
           done < repo_names.txt
