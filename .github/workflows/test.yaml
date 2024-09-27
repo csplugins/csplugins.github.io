@@ -1,0 +1,10 @@
+name: Sample Action
+on:
+  workflow_dispatch:
+  pull_request:
+jobs:
+  job1:
+    steps:
+      - name: Check version of Git
+        run: git -v
+        continue-on-error: true
