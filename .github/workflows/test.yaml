@@ -17,7 +17,6 @@ jobs:
         continue-on-error: true
       - name: See if jq is installed
         run: jq
-        continue-on-error: true
       - name: Use jq to echo the repo names
         run: |
           curl -X POST https://api.github.com/graphql \
@@ -29,6 +28,20 @@ jobs:
                 "org": "OverDriveInc",
                 "teamSlug": "tools-qa"
               }
-            }'
-        # jq '.[] | .name' AppScorecard/repos.json
+            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' | grep -ie AppScorecard > repo_names.txt
+      - name: Clone each repository, create .gitattributes file, and run git add --renormalize
+        run: |
+          while IFS= read -r repo; do
+            git clone https://oauth2:${{ secrets.PAT }}@github.com/MyRepo/$repo
+            cd $repo
+            echo "* text=auto" > .gitattributes
+            git add --renormalize .
+            if [ -n "$(git status --porcelain)" ]; then
+              git checkout -b add-gitattributes
+              git commit -m "Add .gitattributes file and renormalize"
+              git push https://oauth2:${{ secrets.PAT }}@github.com/MyRepo/$repo add-gitattributes
+              gh pr create --title "Add .gitattributes file and renormalize" --body "This PR adds a .gitattributes file and renormalizes the repository." --head add-gitattributes --repo MyRepo/$repo
+            fi
+            cd ..
+          done < repo_names.txt
         continue-on-error: true
