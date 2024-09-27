@@ -11,9 +11,6 @@ jobs:
       - name: Check version of Git
         run: git -v
         continue-on-error: true
-      # - name: Try pulling private repository
-      #   run: git clone https://oauth:${{ secrets.PAT }}@github.com/OverDriveInc/AppScorecard.git
-      #   continue-on-error: true
       - name: Setup Git email
         run: git config --global user.email ""
       - name: Setup Git username
@@ -33,7 +30,7 @@ jobs:
                 "org": "OverDriveInc",
                 "teamSlug": "tools-qa"
               }
-            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' | grep -ie QAPortal > repo_names.txt
+            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' | grep -ie QAPortal -ie AppScorecard > repo_names.txt
       - name: Clone each repository, create .gitattributes file, and run git add --renormalize
         run: |
           while IFS= read -r repo; do
