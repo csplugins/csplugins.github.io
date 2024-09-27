@@ -34,7 +34,7 @@ jobs:
       - name: Clone each repository, create .gitattributes file, and run git add --renormalize
         run: |
           while IFS= read -r repo; do
-            echo $'\n'
+            echo ''
             git clone https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo
             cd $repo
             echo "* text=auto" > .gitattributes
