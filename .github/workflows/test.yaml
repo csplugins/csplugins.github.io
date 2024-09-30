@@ -1,7 +1,11 @@
-name: Sample Action
+name: Tools QA repos - Normalize .gitattributes
 on:
   workflow_dispatch:
-  pull_request:
+    inputs:
+      specificRepository:
+        description: 'Specific repository (blank for all ToolsQA team repos)'
+        required: false
+        default: ''
 env:
   GH_TOKEN: ${{ secrets.PAT }}
 jobs:
@@ -19,7 +23,7 @@ jobs:
         run: ls -a
       - name: See if jq is installed
         run: jq
-      - name: Use jq to echo the repo names
+      - name: Get all repositories in the tools-qa team
         run: |
           curl -X POST https://api.github.com/graphql \
             -H "Content-Type: application/json" \
@@ -30,14 +34,17 @@ jobs:
                 "org": "OverDriveInc",
                 "teamSlug": "tools-qa"
               }
-            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' | grep -ie QAPortal -ie AppScorecard > repo_names.txt
+            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' |\
+            if [ -n "${{ github.event.inputs.specificRepository }}" ]; then grep -Fx "${{ github.event.inputs.specificRepository }}"; else cat; fi > repo_names.txt
+      - name: Clong ToolsQA.Rules repository to ~/ToolsQA.Rules
+        run: git clone -b QA-4786-NormalizeLineEndings https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/ToolsQA.Rules ~/ToolsQA.Rules
       - name: Clone each repository, create .gitattributes file, and run git add --renormalize
         run: |
           while IFS= read -r repo; do
             echo ''
             git clone https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo
             cd $repo
-            echo "* text=auto" > .gitattributes
+            cp ~/ToolsQA.Rules/.gitattributes .gitattributes
             git add --renormalize .
             if [ -n "$(git status --porcelain)" ]; then
               git checkout -b add-gitattributes
