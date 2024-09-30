@@ -1,0 +1,61 @@
+name: Tools QA repos - Normalize .gitattributes
+on:
+  workflow_dispatch:
+    inputs:
+      specificRepository:
+        description: 'Specific repository (blank for all ToolsQA team repos)'
+        required: false
+        default: ''
+env:
+  GH_TOKEN: ${{ secrets.PAT }}
+jobs:
+  job1:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check version of Git
+        run: git -v
+        continue-on-error: true
+      - name: Setup Git email
+        run: git config --global user.email ""
+      - name: Setup Git username
+        run: git config --global user.name "GitHub Actions"
+      - name: Running `ls` command to verify cloning
+        run: ls -a
+      - name: See if jq is installed
+        run: jq
+      - name: Get all repositories in the tools-qa team
+        run: |
+          curl -X POST https://api.github.com/graphql \
+            -H "Content-Type: application/json" \
+            -H "Authorization: Bearer ${{ secrets.PAT }}" \
+            -d '{
+              "query": "query($org: String!, $teamSlug: String!) { organization(login: $org) { team(slug: $teamSlug) { repositories(first: 100) { totalCount nodes { name url } } } } }",
+              "variables": {
+                "org": "OverDriveInc",
+                "teamSlug": "tools-qa"
+              }
+            }' | jq -r '.data.organization.team.repositories.nodes | .[] | .name' |\
+            if [ -n "${{ github.event.inputs.specificRepository }}" ]; then grep -Fx "${{ github.event.inputs.specificRepository }}"; else cat; fi > repo_names.txt
+      - name: Clong ToolsQA.Rules repository to ~/ToolsQA.Rules
+        run: git clone -b QA-4786-NormalizeLineEndings https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/ToolsQA.Rules ~/ToolsQA.Rules
+      - name: Clone each repository, create .gitattributes file, and run git add --renormalize
+        run: |
+          while IFS= read -r repo; do
+            echo ''
+            git clone https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo
+            cd $repo
+            cp ~/ToolsQA.Rules/.gitattributes .gitattributes
+            git add --renormalize .
+            if [ -n "$(git status --porcelain)" ]; then
+              git checkout -b add-gitattributes
+              git add -A
+              git commit -m "Add .gitattributes file and renormalize"
+              git push https://oauth2:${{ secrets.PAT }}@github.com/OverDriveInc/$repo add-gitattributes -f
+              if [ -z "$(gh pr list --repo OverDriveInc/$repo --head add-gitattributes --state open --json number --jq '.[0]')" ]; then
+                gh pr create --title "Add .gitattributes file and renormalize" --body "This PR adds a .gitattributes file and renormalizes the repository." --head add-gitattributes --repo OverDriveInc/$repo
+              else
+                echo "PR already exists"
+              fi
+            fi
+            cd ..
+          done < repo_names.txt
